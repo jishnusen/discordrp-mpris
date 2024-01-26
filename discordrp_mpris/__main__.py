@@ -4,29 +4,41 @@ import re
 import sys
 import time
 from textwrap import shorten
-from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Tuple, Union
+
+import requests
 
 from ampris2 import Mpris2Dbussy, PlaybackStatus, PlayerInterfaces as Player, unwrap_metadata
 import dbussy
 from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
                                 exceptions as async_exceptions)
+import coverpy
 
 from .config import Config
 
-CLIENT_ID = '435587535150907392'
+CLIENT_ID = '1200011962294214686'
 PLAYER_ICONS = {
     # Maps player identity name to icon name
     # https://discord.com/developers/applications/435587535150907392/rich-presence/assets
-    'Clementine': 'clementine',
-    'Media Player Classic Qute Theater': 'mpc-qt',
-    'mpv': 'mpv',
-    'Music Player Daemon': 'mpd',
-    'VLC media player': 'vlc',
-    'SMPlayer': 'smplayer',
-    'Lollypop': 'lollypop',
-    'Mozilla Firefox': 'firefox',
+    'Strawberry': 'strawberry',
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
+
+def _strip_unicode(s: str) -> str:
+    import re
+    return re.sub(r'[^\x00-\x7F]+', '', s)
+def _first_word(s: str) -> str:
+    return s.split()[0]
+
+QUERY_TYPES: List[Callable[[Tuple[str, str]], str]] = [
+    lambda x: x,
+    lambda x: (_strip_unicode(x[0]), x[0]),
+    lambda x: (x[0], _strip_unicode(x[1])),
+    lambda x: tuple(map(_strip_unicode, x)),
+    lambda x: (_first_word(x[0]), x[0]),
+    lambda x: (x[0], _first_word(x[1])),
+    lambda x: tuple(map(_first_word, x)),
+]
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -60,12 +72,14 @@ class DiscordMpris:
 
     active_player: Optional[Player] = None
     last_activity: Optional[JSON] = None
+    last_query_params: Optional[Tuple[str, str]] = None
 
     def __init__(self, mpris: Mpris2Dbussy, discord: AsyncDiscordRpc, config: Config,
                  ) -> None:
         self.mpris = mpris
         self.discord = discord
         self.config = config
+        self.coverpy = coverpy.CoverPy()
 
     async def connect_discord(self) -> None:
         if self.discord.connected:
@@ -142,7 +156,7 @@ class DiscordMpris:
 
         # TODO make format configurable
         if replacements['artist']:
-            # details_fmt = "{artist} - {title}"
+            # details_fmt = "{title} - {albumArtist}"
             details_fmt = "{title}\nby {artist}"
         else:
             details_fmt = "{title}"
@@ -161,19 +175,26 @@ class DiscordMpris:
                 elif show_time == 'remaining':
                     end_time = start_time + (length / 1e6)
                     activity['timestamps']['end'] = end_time
-                activity['state'] = self.format_details("{state} [{length}]", replacements)
+                activity['state'] = self.format_details("on {album}", replacements)
             elif state == PlaybackStatus.PAUSED:
-                activity['state'] = self.format_details("{state} [{position}/{length}]",
+                activity['state'] = self.format_details("on {album}",
                                                         replacements)
             else:
                 activity['state'] = self.format_details("{state}", replacements)
 
         # set icons and hover texts
+        query_params = replacements['album'], replacements['albumArtist']
+        if player.name in PLAYER_ICONS and query_params != self.last_query_params:
+            self.cover_url = self.get_cover(*query_params)
+            self.last_query_params = query_params
+
+        logger.info("using cover url %s", self.cover_url)
+
         if player.name in PLAYER_ICONS:
-            activity['assets'] = {'large_text': player.name,
-                                  'large_image': PLAYER_ICONS[player.name],
-                                  'small_image': state.lower(),
-                                  'small_text': state}
+            activity['assets'] = {'large_text': replacements['album'],
+                                  'large_image': self.cover_url,
+                                  'small_image': PLAYER_ICONS[player.name],
+                                  'small_text': player.name}
         else:
             activity['assets'] = {'large_text': f"{player.name} ({state})",
                                   'large_image': state.lower()}
@@ -234,6 +255,22 @@ class DiscordMpris:
     def _player_not_ignored(self, player: Player) -> bool:
         return (not self.config.player_get(player, "ignore", False))
 
+    def get_cover(self, album: str, artist: str) -> str:
+        cover_url = "strawberry"
+        search = album, artist
+        for pattern in QUERY_TYPES:
+            try:
+                query_str = ' '.join(pattern(search))
+                result = self.coverpy.get_cover(query_str)
+                cover_url = result.artwork()
+                break
+            except coverpy.exceptions.NoResultsException:
+                logger.debug("could not find cover for %s", query_str)
+            except requests.exceptions.HTTPError:
+                logger.error("failed to make http request for cover art")
+
+        return cover_url
+
     @classmethod
     def build_replacements(
         cls,
@@ -246,7 +283,7 @@ class DiscordMpris:
         replacements = metadata.copy()
 
         # aggregate artist and albumArtist fields
-        for key in ('artist', 'albumArtist'):
+        for key in ('albumArtist', 'artist'):
             source = metadata.get(f'xesam:{key}', ())
             if isinstance(source, str):  # In case the server doesn't follow mpris specs
                 replacements[key] = source

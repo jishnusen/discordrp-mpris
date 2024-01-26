@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 dbussy = "*"
 pytoml = "*"
+coverpy = "*"
+discordrp-mpris = {file = "."}
 
 [dev-packages]
 
