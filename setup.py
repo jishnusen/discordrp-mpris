@@ -53,7 +53,7 @@ setup(
             "config.toml",
         ]
     },
-    install_requires=["dbussy", "pytoml"],
+    install_requires=["dbussy", "pytoml", "coverpy"],
     # dependency_links=["https://github.com/ldo/dbussy"],
     python_requires=">=3.6",
 )
