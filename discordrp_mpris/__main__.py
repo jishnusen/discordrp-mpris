@@ -4,7 +4,7 @@ import re
 import sys
 import time
 from textwrap import shorten
-from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Callable, DefaultDict, Dict, Iterable, List, Optional, Tuple, Union, cast
 
 import requests
 
@@ -19,7 +19,7 @@ from .config import Config
 CLIENT_ID = '1200011962294214686'
 PLAYER_ICONS = {
     # Maps player identity name to icon name
-    # https://discord.com/developers/applications/435587535150907392/rich-presence/assets
+    # https://discord.com/developers/applications/1200011962294214686/rich-presence/assets
     'Strawberry': 'strawberry',
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
@@ -32,11 +32,11 @@ def _first_word(s: str) -> str:
 
 QUERY_TYPES: List[Callable[[Tuple[str, str]], str]] = [
     lambda x: x,
-    lambda x: (_strip_unicode(x[0]), x[0]),
     lambda x: (x[0], _strip_unicode(x[1])),
+    lambda x: (_strip_unicode(x[0]), x[0]),
     lambda x: tuple(map(_strip_unicode, x)),
-    lambda x: (_first_word(x[0]), x[0]),
     lambda x: (x[0], _first_word(x[1])),
+    lambda x: (_first_word(x[0]), x[0]),
     lambda x: tuple(map(_first_word, x)),
 ]
 
@@ -184,6 +184,10 @@ class DiscordMpris:
 
         # set icons and hover texts
         query_params = replacements['album'], replacements['albumArtist']
+        query_params = map(lambda s: " ".join(s.split(" ")[:3]), query_params)
+        query_params = map(lambda s: s.split("(")[0].strip(), query_params)
+        query_params = cast(Tuple[str, str], tuple(query_params))
+
         if player.name in PLAYER_ICONS and query_params != self.last_query_params:
             self.cover_url = self.get_cover(*query_params)
             self.last_query_params = query_params
@@ -268,6 +272,8 @@ class DiscordMpris:
                 logger.debug("could not find cover for %s", query_str)
             except requests.exceptions.HTTPError:
                 logger.error("failed to make http request for cover art")
+            except Exception as e:
+                logger.error("failed to fetch cover with %s", repr(e))
 
         return cover_url
 
