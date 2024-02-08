@@ -20,6 +20,7 @@ CLIENT_ID = '1200011962294214686'
 PLAYER_ICONS = {
     # Maps player identity name to icon name
     # https://discord.com/developers/applications/1200011962294214686/rich-presence/assets
+    'cmus': 'cmus',
     'Strawberry': 'strawberry',
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
@@ -192,7 +193,7 @@ class DiscordMpris:
             self.cover_url = self.get_cover(*query_params)
             self.last_query_params = query_params
 
-        logger.info("using cover url %s", self.cover_url)
+            logger.info("using cover url %s", self.cover_url)
 
         if player.name in PLAYER_ICONS:
             activity['assets'] = {'large_text': replacements['album'],
