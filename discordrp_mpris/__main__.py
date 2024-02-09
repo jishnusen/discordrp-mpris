@@ -13,6 +13,7 @@ import dbussy
 from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
                                 exceptions as async_exceptions)
 import coverpy
+from coverpy import exceptions as coverpy_exceptions
 
 from .config import Config
 
@@ -269,13 +270,14 @@ class DiscordMpris:
                 result = self.coverpy.get_cover(query_str)
                 cover_url = result.artwork()
                 break
-            except coverpy.exceptions.NoResultsException:
+            except coverpy_exceptions.NoResultsException:
                 logger.debug("could not find cover for %s", query_str)
             except requests.exceptions.HTTPError:
                 logger.error("failed to make http request for cover art")
             except Exception as e:
                 logger.error("failed to fetch cover with %s", repr(e))
 
+        logger.info("using cover found with query %s", query_str)
         return cover_url
 
     @classmethod
