@@ -188,6 +188,7 @@ class DiscordMpris:
         query_params = replacements['album'], replacements['albumArtist']
         query_params = map(lambda s: " ".join(s.split(" ")[:3]), query_params)
         query_params = map(lambda s: s.split("(")[0].strip(), query_params)
+        query_params = map(lambda s: s.split("[")[0].strip(), query_params)
         query_params = cast(Tuple[str, str], tuple(query_params))
 
         if player.name in PLAYER_ICONS and query_params != self.last_query_params:
