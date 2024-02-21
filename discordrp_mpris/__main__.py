@@ -23,6 +23,7 @@ PLAYER_ICONS = {
     # https://discord.com/developers/applications/1200011962294214686/rich-presence/assets
     'cmus': 'cmus',
     'Strawberry': 'strawberry',
+    'MPD': 'mpd',
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
 
