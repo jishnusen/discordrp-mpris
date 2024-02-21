@@ -23,7 +23,7 @@ PLAYER_ICONS = {
     # https://discord.com/developers/applications/1200011962294214686/rich-presence/assets
     'cmus': 'cmus',
     'Strawberry': 'strawberry',
-    'MPD': 'mpd',
+    'mpd': 'mpd',
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
 
@@ -192,19 +192,20 @@ class DiscordMpris:
         query_params = map(lambda s: s.split("[")[0].strip(), query_params)
         query_params = cast(Tuple[str, str], tuple(query_params))
 
-        if player.name in PLAYER_ICONS and query_params != self.last_query_params:
+        print("NAME", player.bus_name)
+        if player.bus_name in PLAYER_ICONS and query_params != self.last_query_params:
             self.cover_url = self.get_cover(*query_params)
             self.last_query_params = query_params
 
             logger.info("using cover url %s", self.cover_url)
 
-        if player.name in PLAYER_ICONS:
+        if player.bus_name in PLAYER_ICONS:
             activity['assets'] = {'large_text': replacements['album'],
                                   'large_image': self.cover_url,
-                                  'small_image': PLAYER_ICONS[player.name],
-                                  'small_text': player.name}
+                                  'small_image': PLAYER_ICONS[player.bus_name],
+                                  'small_text': player.bus_name}
         else:
-            activity['assets'] = {'large_text': f"{player.name} ({state})",
+            activity['assets'] = {'large_text': f"{player.bus_name} ({state})",
                                   'large_image': state.lower()}
 
         if activity != self.last_activity:
@@ -308,7 +309,7 @@ class DiscordMpris:
         replacements['position'] = \
             cls.format_timestamp(int(position)) if position is not None else ''
         replacements['length'] = cls.format_timestamp(length)
-        replacements['player'] = player.name
+        replacements['player'] = player.bus_name
         replacements['state'] = state
 
         # replace invalid ident char
