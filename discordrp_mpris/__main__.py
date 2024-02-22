@@ -200,7 +200,7 @@ class DiscordMpris:
             logger.info("using cover url %s", self.cover_url)
 
         if player.bus_name in PLAYER_ICONS:
-            activity['assets'] = {'large_text': replacements['album'],
+            activity['assets'] = {'large_text': replacements['album'].ljust(2, ' '),
                                   'large_image': self.cover_url,
                                   'small_image': PLAYER_ICONS[player.bus_name],
                                   'small_text': player.bus_name}
