@@ -157,12 +157,7 @@ class DiscordMpris:
         # position should already be an int, but some players (smplayer) return a float
         replacements = self.build_replacements(player, metadata, position, length, state)
 
-        # TODO make format configurable
-        if replacements['artist']:
-            # details_fmt = "{title} - {albumArtist}"
-            details_fmt = "{title}\nby {artist}"
-        else:
-            details_fmt = "{title}"
+        details_fmt = "{title}"
         details = self.format_details(details_fmt, replacements)
 
         activity['details'] = details
@@ -178,7 +173,7 @@ class DiscordMpris:
                 elif show_time == 'remaining':
                     end_time = start_time + (length / 1e6)
                     activity['timestamps']['end'] = end_time
-                activity['state'] = self.format_details("on {album}", replacements)
+                activity['state'] = self.format_details("by {artist}", replacements)
             elif state == PlaybackStatus.PAUSED:
                 activity['state'] = self.format_details("on {album}",
                                                         replacements)
