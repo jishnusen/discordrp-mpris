@@ -24,6 +24,7 @@ PLAYER_ICONS = {
     'cmus': 'cmus',
     'Strawberry': 'strawberry',
     'mpd': 'mpd',
+    'ncspot': 'ncspot'
 }
 DEFAULT_LOG_LEVEL = logging.WARNING
 
