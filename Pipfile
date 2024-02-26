@@ -8,6 +8,7 @@ dbussy = "*"
 pytoml = "*"
 coverpy = "*"
 discordrp-mpris = {file = "."}
+deezer-python = "*"
 
 [dev-packages]
 

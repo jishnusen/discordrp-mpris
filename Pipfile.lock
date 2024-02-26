@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "12da8d67d07b277b55abd282d93d99b913a4f29cb8f75e5955312f298cdc8e4b"
+            "sha256": "5bb5b4ce19662b1900e7c74a62d2bd4700dd79065603685bf80e6383cf10f6f7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "certifi": {
             "hashes": [
-                "sha256:9b469f3a900bf28dc19b8cfbf8019bf47f7fdd1a65a1d4ffb98fc14166beb4d1",
-                "sha256:e036ab49d5b79556f99cfc2d9320b34cfbe5be05c5871b51de9329f0603b0474"
+                "sha256:0569859f95fc761b18b45ef421b1290a0f65f147e92a1e5eb3e635f9a5e4e66f",
+                "sha256:dc383c07b76109f368f6106eee2b593b04a011ea4d55f652c6ca24a754d1cdd1"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==2023.11.17"
+            "version": "==2024.2.2"
         },
         "charset-normalizer": {
             "hashes": [
@@ -135,6 +135,15 @@
             "index": "pypi",
             "version": "==1.3"
         },
+        "deezer-python": {
+            "hashes": [
+                "sha256:d925b4390711b99226280a926fc25e0951938b4e105f96c7400647128977af15",
+                "sha256:eab24881006fd8e758062d5781816753ddd4774d4742e335513af8ddd1c5a64d"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8' and python_version < '4.0'",
+            "version": "==6.1.1"
+        },
         "discordrp-mpris": {
             "file": "."
         },
@@ -164,11 +173,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:55901e917a5896a349ff771be919f8bd99aff50b79fe58fec595eb37bbc56bb3",
-                "sha256:df7aa8afb0148fa78488e7899b2c59b5f4ffcfa82e6c54ccb9dd37c1d7b52d54"
+                "sha256:450b20ec296a467077128bff42b73080516e71b56ff59a60a02bef2232c4fa9d",
+                "sha256:d0570876c61ab9e520d776c38acbbb5b05a776d3f9ff98a5c8fd5162a444cf19"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.1.0"
+            "version": "==2.2.1"
         }
     },
     "develop": {}

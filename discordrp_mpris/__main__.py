@@ -14,6 +14,7 @@ from discord_rpc.async_ import (AsyncDiscordRpc, DiscordRpcError, JSON,
                                 exceptions as async_exceptions)
 import coverpy
 from coverpy import exceptions as coverpy_exceptions
+import deezer
 
 from .config import Config
 
@@ -84,6 +85,7 @@ class DiscordMpris:
         self.discord = discord
         self.config = config
         self.coverpy = coverpy.CoverPy()
+        self.deezer = deezer.Client()
 
     async def connect_discord(self) -> None:
         if self.discord.connected:
@@ -183,12 +185,11 @@ class DiscordMpris:
 
         # set icons and hover texts
         query_params = replacements['album'], replacements['albumArtist']
-        query_params = map(lambda s: " ".join(s.split(" ")[:3]), query_params)
+        query_params = map(lambda s: " ".join(s.split(" ")[:5]), query_params)
         query_params = map(lambda s: s.split("(")[0].strip(), query_params)
         query_params = map(lambda s: s.split("[")[0].strip(), query_params)
         query_params = cast(Tuple[str, str], tuple(query_params))
 
-        print("NAME", player.bus_name)
         if player.bus_name in PLAYER_ICONS and query_params != self.last_query_params:
             self.cover_url = self.get_cover(*query_params)
             self.last_query_params = query_params
@@ -263,6 +264,10 @@ class DiscordMpris:
     def get_cover(self, album: str, artist: str) -> str:
         cover_url = "strawberry"
         search = album, artist
+        res = self.deezer.search(artist=artist, album=album)
+        if res:
+            return res[0].album.cover
+
         for pattern in QUERY_TYPES:
             try:
                 query_str = ' '.join(pattern(search))
